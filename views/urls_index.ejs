@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include partials/_head %>
+  </head>
+
+  <body>
+    <p><a href="#">Shorten a new URL</a></p>
+    <table>
+      <tr><th>Shortened URLs</th></tr>
+      <% for (let url in urls) { %>
+        <tr><td><%= url %> - <%= urls[url] %></td></tr>
+      <% }; %>
+    </table>
+
+  </body>
+</html>
