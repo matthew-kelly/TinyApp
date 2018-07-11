@@ -1,0 +1,17 @@
+/* ----------- HTML ----------- */
+body {
+  font-size: 20px;
+  background-color: #aaa;
+}
+
+/* ----------- .class ----------- */
+.new-URL-form {
+  margin: 50px
+}
+
+/* ----------- #id ----------- */
+#wrapper {
+  width: 90%;
+  background-color: #f8f8f6;
+  padding: 50px;
+}
