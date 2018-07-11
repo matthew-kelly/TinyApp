@@ -29,14 +29,14 @@ app.post("/urls", (req, res) => {
   if (urlDatabase.hasOwnProperty(shortURL)) { // check if generated string matches an already existing one
     shortURL = generateRandomString();
   }
+  if (!longURL.includes("www.")) {
+    res.status(404).send(`"${longURL}" is not a valid URL. Write your URL in the form "www.example.com".`); // send to error page,
+  }
   if (!longURL.startsWith("http")) { // check if longURL's start is not valid
     longURL = "http://" + longURL; // add protocol to longURL
   }
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`); // redirect to shortURL page
-  // else {
-  //   res.status(404).send(`"${longURL}" is not a valid URL. Write your URL in the form "http://www.example.com".`) // send to error page,
-  // }
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -44,13 +44,19 @@ app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) { // check if shortURL is in the database
     res.redirect(longURL); // redirect to longURL
   } else {
-    res.status(404).send(`The shortened URL "${req.params.shortURL}" does not exist.`) // send to error page
+    res.status(404).send(`The shortened URL "${req.params.shortURL}" does not exist.`); // send to error page
   }
 });
 
 app.get("/urls/:id", (req, res) => {
   let templateVars = { shortURL: req.params.id, urls: urlDatabase };
   res.render("urls_show", templateVars);
+});
+
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect("/urls");
 });
 
 app.get("/urls.json", (req, res) => {

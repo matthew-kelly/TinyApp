@@ -7,9 +7,13 @@
   <body style="font-size:20px; padding:50px;">
     <p><a href="/urls/new">Shorten a new URL</a></p>
     <table>
-      <tr><th>Shortened URLs</th></tr>
+      <tr><th colspan="3">Shortened URLs</th></tr>
       <% for (let url in urls) { %>
-        <tr><td><a href="u/<%= url %>"><%= url %></a> - <%= urls[url] %></td></tr>
+        <tr>
+          <td><a href="u/<%= url %>"><%= url %></a></td>
+          <td><%= urls[url] %></td>
+          <td><form method="POST" action="/urls/<%= url %>/delete"><input type="submit" value="Delete"></input></form></td>
+        </tr>
       <% }; %>
     </table>
 
