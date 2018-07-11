@@ -31,11 +31,12 @@ app.post("/urls", (req, res) => {
   }
   if (!longURL.startsWith("http")) { // check if longURL's start is not valid
     longURL = "http://" + longURL; // add protocol to longURL
-    urlDatabase[shortURL] = longURL;
-    res.redirect(`/urls/${shortURL}`); // redirect to shortURL page
-  } else {
-    res.status(404).send(`"${longURL}" is not a valid URL. Write your URL in the form "http://www.example.com".`) // send to error page
   }
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`); // redirect to shortURL page
+  // else {
+  //   res.status(404).send(`"${longURL}" is not a valid URL. Write your URL in the form "http://www.example.com".`) // send to error page,
+  // }
 });
 
 app.get("/u/:shortURL", (req, res) => {
