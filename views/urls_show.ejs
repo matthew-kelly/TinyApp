@@ -4,9 +4,10 @@
     <% include partials/_head %>
   </head>
 
-  <body>
+  <body style="font-size:20px; padding:50px;">
+    <% include partials/_header %>
     <table>
-      <tr><th>Shortened URLs</th></tr>
+      <tr><th>Shortened URL</th></tr>
       <tr><td><%= shortURL %> - <%= urls[shortURL] %></td></tr>
     </table>
   </body>

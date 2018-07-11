@@ -24,14 +24,27 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const newShortURL = generateRandomString();
-  urlDatabase[newShortURL] = req.body.longURL;
-  res.redirect(`/urls/${newShortURL}`); // response
+  let shortURL = generateRandomString();
+  let longURL = req.body.longURL;
+  if (urlDatabase.hasOwnProperty(shortURL)) { // check if generated string matches an already existing one
+    shortURL = generateRandomString();
+  }
+  if (!longURL.startsWith("http")) { // check if longURL's start is not valid
+    longURL = "http://" + longURL; // add protocol to longURL
+    urlDatabase[shortURL] = longURL;
+    res.redirect(`/urls/${shortURL}`); // redirect to shortURL page
+  } else {
+    res.status(404).send(`"${longURL}" is not a valid URL. Write your URL in the form "http://www.example.com".`) // send to error page
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = ...
-  res.redirect(longURL);
+  let longURL = urlDatabase[req.params.shortURL];
+  if (urlDatabase[req.params.shortURL]) { // check if shortURL is in the database
+    res.redirect(longURL); // redirect to longURL
+  } else {
+    res.status(404).send(`The shortened URL "${req.params.shortURL}" does not exist.`) // send to error page
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -43,21 +56,23 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
 // functions
 // random string - sampled from https://stackoverflow.com/questions/16106701/how-to-generate-a-random-string-of-letters-and-numbers-in-javascript
+// issues - Math.random()
 function generateRandomString() {
   let string = "";
-  var charset = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const charsetLower = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const charsetUpper = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   for (let i = 0; i < 6; i++) {
-    string += charset.charAt(Math.floor(Math.random() * charset.length));
+    if (Math.random() >= 0.5) { // 50/50 choice between uppercase and lowercase charsets
+      string += charsetUpper.charAt(Math.floor(Math.random() * charsetUpper.length));
+    } else {
+      string += charsetLower.charAt(Math.floor(Math.random() * charsetLower.length));
+    }
   }
   return string;
 }

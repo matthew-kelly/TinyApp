@@ -4,12 +4,12 @@
     <% include partials/_head %>
   </head>
 
-  <body>
-    <p><a href="#">Shorten a new URL</a></p>
+  <body style="font-size:20px; padding:50px;">
+    <p><a href="/urls/new">Shorten a new URL</a></p>
     <table>
       <tr><th>Shortened URLs</th></tr>
       <% for (let url in urls) { %>
-        <tr><td><%= url %> - <%= urls[url] %></td></tr>
+        <tr><td><a href="u/<%= url %>"><%= url %></a> - <%= urls[url] %></td></tr>
       <% }; %>
     </table>
 
