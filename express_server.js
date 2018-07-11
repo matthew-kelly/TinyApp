@@ -11,7 +11,7 @@ let urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.end("Hello!");
+  res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
@@ -19,24 +19,36 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+app.get("/urls/error", (req, res) => {
+  let templateVars = { urls: urlDatabase };
+  res.status(400).render("urls_error", templateVars);
+});
+
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.post("/urls", (req, res) => {
+app.post("/urls/new", (req, res) => {
   let shortURL = generateRandomString();
   let longURL = req.body.longURL;
+  let checker = true;
   if (urlDatabase.hasOwnProperty(shortURL)) { // check if generated string matches an already existing one
     shortURL = generateRandomString();
   }
   if (!longURL.includes("www.")) {
-    res.status(404).send(`"${longURL}" is not a valid URL. Write your URL in the form "www.example.com".`); // send to error page,
+    checker = false;
+    res.status(400).redirect('/urls/error'); // send to error page,
   }
-  if (!longURL.startsWith("http")) { // check if longURL's start is not valid
-    longURL = "http://" + longURL; // add protocol to longURL
+  if (checker) {
+    if (!longURL.startsWith("http")) {
+      longURL = "http://" + longURL; // add protocol to longURL
+      urlDatabase[shortURL] = longURL;
+      res.redirect(`/urls/${shortURL}`);
+    } else {
+      urlDatabase[shortURL] = longURL;
+      res.redirect(`/urls/${shortURL}`);
+    }
   }
-  urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`); // redirect to shortURL page
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -44,7 +56,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) { // check if shortURL is in the database
     res.redirect(longURL); // redirect to longURL
   } else {
-    res.status(404).send(`The shortened URL "${req.params.shortURL}" does not exist.`); // send to error page
+    res.status(404).redirect('/urls/error'); // send to error page
   }
 });
 
@@ -53,10 +65,34 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.post("/urls/:id", (req, res) => {
+  let shortURL = req.params.id;
+  let longURL = req.body[req.params.id];
+  let checker = true;
+  if (!longURL.includes("www.")) {
+    checker = false;
+    res.status(400).redirect('/urls/error'); // send to error page,
+  }
+  if (checker) {
+    if (!longURL.startsWith("http")) {
+      longURL = "http://" + longURL; // add protocol to longURL
+      urlDatabase[shortURL] = longURL;
+      res.redirect("/urls");
+    } else {
+      urlDatabase[shortURL] = longURL;
+      res.redirect("/urls");
+    }
+  }
+});
 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
+});
+
+app.get("/urls/:id/edit", (req, res) => {
+  let shortURL = req.params.id;
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls.json", (req, res) => {

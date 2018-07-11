@@ -6,12 +6,13 @@
 
   <body>
     <div id="wrapper">
-      <% include partials/_header %>
-      <form action="/urls" method="POST" class="new-URL-form">
-        <label for="longURL">Enter a URL <em>(www.example.ca)</em>:</label>
-        <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
-        <input type="submit" value="Submit">
+      <h1>New URL</h1>
+      <form action="/urls/new" method="POST" class="text-form">
+        <label class="text-input" for="longURL">Enter a URL:</label>
+        <input class="text-input" id="longURL" type="text" name="longURL" placeholder="http://www.example.ca">
+        <input class="button" type="submit" value="Submit">
       </form>
+      <% include partials/_header %>
     </div>
   </body>
 </html>

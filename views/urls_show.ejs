@@ -6,7 +6,6 @@
 
   <body>
     <div id="wrapper">
-      <% include partials/_header %>
       <table>
         <tr><th colspan="2">Shortened URL</th></tr>
         <tr>
@@ -14,6 +13,12 @@
           <td><%= urls[shortURL] %></td>
         </tr>
       </table>
+      <form action="/urls/<%= shortURL %>" method="POST" class="text-form">
+        <label class="text-input" for="<%= shortURL %>">Edit this URL:</label>
+        <input class="text-input" id="<%= shortURL %>" type="text" name="<%= shortURL %>" placeholder="http://www.example.ca">
+        <input class="button" type="submit" value="Submit">
+      </form>
+      <% include partials/_header %>
     </div>
   </body>
 </html>
