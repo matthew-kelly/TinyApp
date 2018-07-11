@@ -67,7 +67,7 @@ app.post("/urls/new", (req, res) => {
   }
   if (!longURL.includes("www.")) {
     checker = false;
-    res.status(400).redirect("/urls/error"); // send to error page,
+    res.status(400).redirect("/urls/error");
   }
   if (checker) {
     if (!longURL.startsWith("http")) {
@@ -108,7 +108,7 @@ app.post("/urls/:id", (req, res) => {
   let checker = true;
   if (!longURL.includes("www.")) {
     checker = false;
-    res.status(400).redirect("/urls/error"); // send to error page,
+    res.status(400).redirect("/urls/error");
   }
   if (checker) {
     if (!longURL.startsWith("http")) {
