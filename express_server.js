@@ -24,21 +24,37 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+// delete login cookie, redirect to urls page
+app.post("/logout", (req, res) => {
+  res.clearCookie("username", req.body.username);
+  res.redirect("/urls");
+});
+
 // render urls page
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render("urls_index", templateVars);
 });
 
 // render error page
 app.get("/urls/error", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.status(400).render("urls_error", templateVars);
 });
 
 // render new url page
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
 // create new short/long url pair, redirect to urls
@@ -77,7 +93,11 @@ app.get("/u/:shortURL", (req, res) => {
 
 // render show page
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, urls: urlDatabase };
+  let templateVars = {
+    shortURL: req.params.id,
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render("urls_show", templateVars);
 });
 
