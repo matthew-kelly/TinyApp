@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include partials/_head %>
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <% include partials/_header %>
+      <hr>
+      <h1>Login</h1>
+      <hr>
+      <form action="/register" method="POST" class="text-form">
+        <input class="text-input" type="email" name="email" placeholder="Email">
+        <input class="text-input" type="password" name="password" placeholder="Password">
+        <input class="button" type="submit" value="Submit">
+      </form>
+      <p><a href="/urls">Back to URLs</a></p>
+    </div>
+  </body>
+</html>

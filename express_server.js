@@ -8,6 +8,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/views")); // allows css in expressjs
 
+// Users database
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
+// URL database
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -16,6 +31,15 @@ let urlDatabase = {
 // home redirect to urls page
 app.get("/", (req, res) => {
   res.redirect("/urls");
+});
+
+// render registration page
+app.get("/register", (req, res) => {
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
+  res.render("urls_register", templateVars);
 });
 
 // create login cookie, redirect to urls page
