@@ -49,20 +49,23 @@ app.post("/register", (req, res) => {
   let newUserObj = {};
   newUserObj.id = newID;
   if (!req.body.email) { // no email
-    res.status(400).redirect("/urls/error");
+    // res.status(400).redirect("/urls/error");
+    res.sendStatus(400);
     return;
   } else {
     newUserObj.email = req.body.email;
   }
   if (!req.body.password) { // no password
-    res.status(400).redirect("/urls/error");
+    // res.status(400).redirect("/urls/error");
+    res.sendStatus(400);
     return;
   } else {
     newUserObj.password = req.body.password;
   }
   for (let key in users) { // duplicate email
     if (users[key].email === req.body.email) {
-      res.status(400).redirect("/urls/error");
+      // res.status(400).redirect("/urls/error");
+      res.sendStatus(400);
       return;
     }
   }
@@ -71,9 +74,34 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
+// render login page
+app.get("/login", (req, res) => {
+  let templateVars = {
+    urls: urlDatabase,
+    user_id: req.cookies.user_id,
+    user: users[req.cookies.user_id]
+  };
+  res.render("urls_login", templateVars);
+});
+
 // create login cookie, redirect to urls page
 app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.user_id);
+  let email = req.body.email;
+  let password = req.body.password;
+  let userid = "";
+  for (let key in users) {
+    if (users[key].email === email) { // email in database
+      if (users[key].password === password) { // password in database
+        userid = users[key].id;
+      }
+    }
+  }
+  if (!userid) {
+    // res.status(403).redirect("/urls/error");
+    res.sendStatus(403);
+    return;
+  }
+  res.cookie("user_id", userid);
   res.redirect("/urls");
 });
 
@@ -100,7 +128,7 @@ app.get("/urls/error", (req, res) => {
     user_id: req.cookies.user_id,
     user: users[req.cookies.user_id]
   };
-  res.status(400).render("urls_error", templateVars);
+  res.render("urls_error", templateVars);
 });
 
 // render new url page
@@ -123,7 +151,8 @@ app.post("/urls/new", (req, res) => {
   }
   if (!longURL.includes("www.")) {
     checker = false;
-    res.status(400).redirect("/urls/error");
+    // res.status(400).redirect("/urls/error");
+    res.sendStatus(400);
   }
   if (checker) {
     if (!longURL.startsWith("http")) {
@@ -143,7 +172,8 @@ app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) { // check if shortURL is in the database
     res.redirect(longURL); // redirect to longURL
   } else {
-    res.status(404).redirect("/urls/error"); // send to error page
+    // res.status(404).redirect("/urls/error"); // send to error page
+    res.sendStatus(404);
   }
 });
 
@@ -165,7 +195,8 @@ app.post("/urls/:id", (req, res) => {
   let checker = true;
   if (!longURL.includes("www.")) {
     checker = false;
-    res.status(400).redirect("/urls/error");
+    // res.status(400).redirect("/urls/error");
+    res.sendStatus(400);
   }
   if (checker) {
     if (!longURL.startsWith("http")) {

@@ -63,6 +63,11 @@ hr {
   padding: 10px 0;
 }
 
+.header-text {
+  display: inline-block;
+  text-align: center;
+}
+
 .text-input {
   padding: 6px 5px;
   width: 190px;

@@ -6,16 +6,13 @@
 
   <body>
     <div id="wrapper">
-      <% include partials/_header %>
+      <h1>Login</h1>
       <hr>
-      <h1>Register</h1>
-      <hr>
-      <form action="/register" method="POST" class="text-form">
+      <form action="/login" method="POST" class="text-form">
         <input class="text-input" type="email" name="email" placeholder="Email">
         <input class="text-input" type="password" name="password" placeholder="Password">
-        <input class="button" type="submit" value="Register">
+        <input class="button" type="submit" value="Login">
       </form>
-      <p><a href="/urls">Back to URLs</a></p>
     </div>
   </body>
 </html>
