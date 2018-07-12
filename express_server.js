@@ -44,11 +44,32 @@ app.get("/register", (req, res) => {
 
 // create new user registration, add to users object
 app.post("/register", (req, res) => {
+
   const newID = generateRandomString();
   let newUserObj = {};
   newUserObj.id = newID;
-  newUserObj.email = req.body.email;
-  newUserObj.password = req.body.password;
+
+  if (!req.body.email) { // no email
+    res.status(400).redirect("/urls/error");
+    return;
+  } else {
+    newUserObj.email = req.body.email;
+  }
+
+  if (!req.body.password) { // no password
+    res.status(400).redirect("/urls/error");
+    return;
+  } else {
+    newUserObj.password = req.body.password;
+  }
+
+  for (let key in users) { // duplicate email
+    if (users[key].email === req.body.email) {
+      res.status(400).redirect("/urls/error");
+      return;
+    }
+  }
+
   users[newID] = newUserObj;
   res.cookie("user_id", newID).redirect("/urls");
 });
