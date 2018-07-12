@@ -44,8 +44,8 @@ app.get("/", (req, res) => {
 app.get("/register", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies.user_id,
-    user: users[req.cookies.user_id]
+    user_id: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_register", templateVars);
 });
@@ -57,14 +57,14 @@ app.post("/register", (req, res) => {
   newUserObj.id = newID;
   if (!req.body.email) { // no email
     // res.status(400).redirect("/urls/error");
-    res.sendStatus(400);
+    res.status(400).send("Email and Password fields cannot be empty!");
     return;
   } else {
     newUserObj.email = req.body.email;
   }
   if (!req.body.password) { // no password
     // res.status(400).redirect("/urls/error");
-    res.sendStatus(400);
+    res.status(400).send("Email and Password fields cannot be empty!");
     return;
   } else {
     newUserObj.password = req.body.password;
@@ -72,7 +72,7 @@ app.post("/register", (req, res) => {
   for (let key in users) { // duplicate email
     if (users[key].email === req.body.email) {
       // res.status(400).redirect("/urls/error");
-      res.sendStatus(400);
+      res.status(400).send("Email already exists!");
       return;
     }
   }
@@ -85,8 +85,8 @@ app.post("/register", (req, res) => {
 app.get("/login", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies.user_id,
-    user: users[req.cookies.user_id]
+    user_id: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_login", templateVars);
 });
@@ -105,7 +105,7 @@ app.post("/login", (req, res) => {
   }
   if (!userid) {
     // res.status(403).redirect("/urls/error");
-    res.sendStatus(403);
+    res.status(403).send("Account doesn't exist!")
     return;
   }
   res.cookie("user_id", userid);
@@ -122,8 +122,8 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies.user_id,
-    user: users[req.cookies.user_id]
+    user_id: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_index", templateVars);
 });
@@ -132,8 +132,8 @@ app.get("/urls", (req, res) => {
 app.get("/urls/error", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies.user_id,
-    user: users[req.cookies.user_id]
+    user_id: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_error", templateVars);
 });
@@ -142,8 +142,8 @@ app.get("/urls/error", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies.user_id,
-    user: users[req.cookies.user_id]
+    user_id: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_new", templateVars);
 });
@@ -161,7 +161,8 @@ app.post("/urls/new", (req, res) => {
   if (!longURL.includes("www.")) {
     checker = false;
     // res.status(400).redirect("/urls/error");
-    res.sendStatus(400);
+    res.status(400).send('URLs must begin with "www."');
+    return;
   }
   if (checker) {
     if (!longURL.startsWith("http")) {
@@ -182,7 +183,8 @@ app.get("/u/:shortURL", (req, res) => {
     res.redirect(longURL);
   } else {
     // res.status(404).redirect("/urls/error"); // send to error page
-    res.sendStatus(404);
+    res.status(404).send("Shortened URL doesn't exist!");
+    return;
   }
 });
 
@@ -191,8 +193,8 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     urls: urlDatabase,
-    user_id: req.cookies.user_id,
-    user: users[req.cookies.user_id]
+    user_id: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
 });
@@ -203,11 +205,17 @@ app.post("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   let longURL = req.body[req.params.id];
   let user_id = req.cookies["user_id"];
+  let url_id = urlDatabase[req.params.id].id;
   let checker = true;
+  if (user_id !== url_id) {
+    res.status(403).send("Cannot edit URLs you didn't make!");
+    return;
+  }
   if (!longURL.includes("www.")) {
     checker = false;
     // res.status(400).redirect("/urls/error");
-    res.sendStatus(400);
+    res.status(400).send('URLs must begin with "www."');
+    return;
   }
   if (checker) {
     if (!longURL.startsWith("http")) {
@@ -223,8 +231,15 @@ app.post("/urls/:id", (req, res) => {
 
 // delete url, redirect to urls page
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+  let user_id = req.cookies["user_id"];
+  let url_id = urlDatabase[req.params.id].id;
+  if (user_id !== url_id) {
+    res.status(403).send("Cannot delete URLs you didn't make!");
+    return;
+  } else {
+    delete urlDatabase[req.params.id];
+    res.redirect("/urls");
+  }
 });
 
 // redirect edit to show page
@@ -244,7 +259,6 @@ app.listen(PORT, () => {
 
 // functions
 // random string - sampled from https://stackoverflow.com/questions/16106701/how-to-generate-a-random-string-of-letters-and-numbers-in-javascript
-// issues - Math.random()
 function generateRandomString() {
   let string = "";
   const charsetLower = "0123456789abcdefghijklmnopqrstuvwxyz";
