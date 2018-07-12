@@ -120,8 +120,9 @@ app.post("/logout", (req, res) => {
 
 // render urls page
 app.get("/urls", (req, res) => {
+  const user_id = req.cookies["user_id"];
   let templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(user_id),
     user_id: req.cookies["user_id"],
     user: users[req.cookies["user_id"]]
   };
@@ -190,9 +191,11 @@ app.get("/u/:shortURL", (req, res) => {
 
 // render show page
 app.get("/urls/:id", (req, res) => {
+  let user_id = req.cookies["user_id"];
   let templateVars = {
     shortURL: req.params.id,
-    urls: urlDatabase,
+    database: urlDatabase,
+    urls: urlsForUser(user_id),
     user_id: req.cookies["user_id"],
     user: users[req.cookies["user_id"]]
   };
@@ -271,4 +274,14 @@ function generateRandomString() {
     }
   }
   return string;
+}
+
+function urlsForUser(id) {
+  let userURLS = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].id === id) {
+      userURLS[url] = urlDatabase[url];
+    }
+  }
+  return userURLS;
 }

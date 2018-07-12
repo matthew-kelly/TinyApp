@@ -6,6 +6,21 @@
 
   <body>
     <div id="wrapper">
+    <% if (!user_id) { %>
+      <h1>Not Logged In</h1>
+      <hr>
+      <form action="/login" method="GET" class="text-form header-text">
+        <input class="button" type="submit" value="Login">
+      </form>
+      <form action="/register" method="GET" class="text-form header-text">
+        <input class="button" type="submit" value="Register">
+      </form>
+    <% } else if (user_id !== database[shortURL].id) { %>
+      <% include partials/_header %>
+      <hr>
+      <h1>Not Your URL</h1>
+      <hr>
+    <% } else { %>
       <% include partials/_header %>
       <hr>
       <table>
@@ -20,6 +35,7 @@
         <input class="text-input" id="<%= shortURL %>" type="text" name="<%= shortURL %>" placeholder="www.example.ca">
         <input class="button" type="submit" value="Submit">
       </form>
+    <% } %>
       <p><a href="/urls">Back to URLs</a></p>
     </div>
   </body>
