@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -22,10 +22,17 @@ let users = {
   }
 }
 
-// URL database
 let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    short: "b2xVn2",
+    long: "http://www.lighthouselabs.ca",
+    id: "x5RsDv"
+  },
+  "9sm5xK": {
+    short: "9sm5xK",
+    long: "http://www.google.com",
+    id: "ui98nm"
+  }
 };
 
 // home redirect to urls page
@@ -143,10 +150,12 @@ app.get("/urls/new", (req, res) => {
 
 // create new short/long url pair, redirect to urls
 app.post("/urls/new", (req, res) => {
+  let newURL = {};
+  let user_id = req.cookies["user_id"];
   let shortURL = generateRandomString();
   let longURL = req.body.longURL;
   let checker = true;
-  if (urlDatabase.hasOwnProperty(shortURL)) { // check if generated string matches an already existing one
+  if (urlDatabase.hasOwnProperty(shortURL)) { // check if generated string matches an already existing one, generates a new string otherwise. Will still cause an error if the 2nd number is the same as well.
     shortURL = generateRandomString();
   }
   if (!longURL.includes("www.")) {
@@ -156,21 +165,21 @@ app.post("/urls/new", (req, res) => {
   }
   if (checker) {
     if (!longURL.startsWith("http")) {
-      longURL = "http://" + longURL; // add protocol to longURL
-      urlDatabase[shortURL] = longURL;
-      res.redirect(`/urls/${shortURL}`);
-    } else {
-      urlDatabase[shortURL] = longURL;
-      res.redirect(`/urls/${shortURL}`);
+      longURL = "http://" + longURL;
     }
+    newURL.short = shortURL;
+    newURL.long = longURL;
+    newURL.id = user_id;
+    urlDatabase[shortURL] = newURL;
+    res.redirect(`/urls/${shortURL}`);
   }
 });
 
 // redirect to full site
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  if (urlDatabase[req.params.shortURL]) { // check if shortURL is in the database
-    res.redirect(longURL); // redirect to longURL
+  let longURL = urlDatabase[req.params.shortURL].long;
+  if (longURL) { // check if shortURL is in the database
+    res.redirect(longURL);
   } else {
     // res.status(404).redirect("/urls/error"); // send to error page
     res.sendStatus(404);
@@ -190,8 +199,10 @@ app.get("/urls/:id", (req, res) => {
 
 // edit url, redirect to urls page
 app.post("/urls/:id", (req, res) => {
+  let newURL = {};
   let shortURL = req.params.id;
   let longURL = req.body[req.params.id];
+  let user_id = req.cookies["user_id"];
   let checker = true;
   if (!longURL.includes("www.")) {
     checker = false;
@@ -200,13 +211,13 @@ app.post("/urls/:id", (req, res) => {
   }
   if (checker) {
     if (!longURL.startsWith("http")) {
-      longURL = "http://" + longURL; // add protocol to longURL
-      urlDatabase[shortURL] = longURL;
-      res.redirect("/urls");
-    } else {
-      urlDatabase[shortURL] = longURL;
-      res.redirect("/urls");
+      longURL = "http://" + longURL;
     }
+    newURL.short = shortURL;
+    newURL.long = longURL;
+    newURL.id = user_id;
+    urlDatabase[shortURL] = newURL;
+    res.redirect("/urls");
   }
 });
 

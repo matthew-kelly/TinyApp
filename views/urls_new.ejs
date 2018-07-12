@@ -6,6 +6,17 @@
 
   <body>
     <div id="wrapper">
+      <% if (!user_id) { %>
+        <h1>Not Logged In</h1>
+        <hr>
+        <form action="/login" method="GET" class="text-form header-text">
+          <input class="button" type="submit" value="Login">
+        </form>
+        <form action="/register" method="GET" class="text-form header-text">
+          <input class="button" type="submit" value="Register">
+        </form>
+      <% } else { %>
+
       <% include partials/_header %>
       <hr>
       <h1>New URL</h1>
@@ -16,6 +27,7 @@
         <input class="button" type="submit" value="Submit">
       </form>
       <p><a href="/urls">Back to URLs</a></p>
+      <% } %>
     </div>
   </body>
 </html>
