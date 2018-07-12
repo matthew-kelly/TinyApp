@@ -9,16 +9,16 @@ app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/views")); // allows css in expressjs
 
 // Users database
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+let users = {
+  "x5RsDv": {
+    id: "x5RsDv",
+    email: "user1@example.com",
+    password: "user1"
   },
-  "user2RandomID": {
-    id: "user2RandomID",
+  "ui98nm": {
+    id: "ui98nm",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: "user2"
   }
 }
 
@@ -40,6 +40,17 @@ app.get("/register", (req, res) => {
     username: req.cookies["username"]
   };
   res.render("urls_register", templateVars);
+});
+
+// create new user registration, add to users object
+app.post("/register", (req, res) => {
+  const newID = generateRandomString();
+  let newUserObj = {};
+  newUserObj.id = newID;
+  newUserObj.email = req.body.email;
+  newUserObj.password = req.body.password;
+  users[newID] = newUserObj;
+  res.cookie("user_id", newID).redirect("/urls");
 });
 
 // create login cookie, redirect to urls page
