@@ -2,26 +2,30 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
-app.use(cookieParser());
+app.use(cookieSession({
+  name: "session",
+  keys: ["secret"],
+}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/views")); // allows css in expressjs
+const saltRounds = 10;
 
-// Users database
+// Users database with sample users
 let users = {
   "x5RsDv": {
     id: "x5RsDv",
     email: "user1@example.com",
-    password: "user1"
+    password: "$2b$10$LH..m8FREYZowLgq6jys5uMKr4nZ5dTI.O8holfs4O1QgqnAK1Fs2"
   },
   "ui98nm": {
     id: "ui98nm",
     email: "user2@example.com",
-    password: "user2"
+    password: "$2b$10$TVqjs.52rX29kJwYRFjcyOO7gbiiY0yTYG6HMMufUPtXh7iUV9VBW"
   }
-}
+};
 
 let urlDatabase = {
   "b2xVn2": {
@@ -45,8 +49,8 @@ app.get("/", (req, res) => {
 app.get("/register", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    user_id: req.session.user_id,
+    user: users[req.session.user_id]
   };
   res.render("urls_register", templateVars);
 });
@@ -57,28 +61,26 @@ app.post("/register", (req, res) => {
   let newUserObj = {};
   newUserObj.id = newID;
   if (!req.body.email) { // no email
-    // res.status(400).redirect("/urls/error");
     res.status(400).send("Email and Password fields cannot be empty!");
     return;
   } else {
     newUserObj.email = req.body.email;
   }
   if (!req.body.password) { // no password
-    // res.status(400).redirect("/urls/error");
     res.status(400).send("Email and Password fields cannot be empty!");
     return;
   } else {
-    newUserObj.password = bcrypt.hashSync(req.body.password, 10);
+    newUserObj.password = bcrypt.hashSync(req.body.password, saltRounds);
+    console.log(newUserObj.password);
   }
   for (let key in users) { // duplicate email
     if (users[key].email === req.body.email) {
-      // res.status(400).redirect("/urls/error");
       res.status(400).send("Email already exists!");
       return;
     }
   }
   users[newID] = newUserObj;
-  res.cookie("user_id", newID);
+  req.session.user_id = newID;
   res.redirect("/urls");
 });
 
@@ -86,8 +88,8 @@ app.post("/register", (req, res) => {
 app.get("/login", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    user_id: req.session.user_id,
+    user: users[req.session.user_id]
   };
   res.render("urls_login", templateVars);
 });
@@ -105,27 +107,26 @@ app.post("/login", (req, res) => {
     }
   }
   if (!userid) {
-    // res.status(403).redirect("/urls/error");
-    res.status(403).send("Account doesn't exist!")
+    res.status(403).send("Incorrect Email or Password!");
     return;
   }
-  res.cookie("user_id", userid);
+  req.session.user_id = userid;
   res.redirect("/urls");
 });
 
 // delete login cookie, redirect to urls page
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session.user_id = undefined;
   res.redirect("/urls");
 });
 
 // render urls page
 app.get("/urls", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session.user_id;
   let templateVars = {
     urls: urlsForUser(user_id),
-    user_id: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    user_id: req.session.user_id,
+    user: users[req.session.user_id]
   };
   res.render("urls_index", templateVars);
 });
@@ -134,8 +135,8 @@ app.get("/urls", (req, res) => {
 app.get("/urls/error", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    user_id: req.session.user_id,
+    user: users[req.session.user_id]
   };
   res.render("urls_error", templateVars);
 });
@@ -144,8 +145,8 @@ app.get("/urls/error", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    user_id: req.session.user_id,
+    user: users[req.session.user_id]
   };
   res.render("urls_new", templateVars);
 });
@@ -153,7 +154,7 @@ app.get("/urls/new", (req, res) => {
 // create new short/long url pair, redirect to urls
 app.post("/urls/new", (req, res) => {
   let newURL = {};
-  let user_id = req.cookies["user_id"];
+  let user_id = req.session.user_id;
   let shortURL = generateRandomString();
   let longURL = req.body.longURL;
   let checker = true;
@@ -162,7 +163,6 @@ app.post("/urls/new", (req, res) => {
   }
   if (!longURL.includes("www.")) {
     checker = false;
-    // res.status(400).redirect("/urls/error");
     res.status(400).send('URLs must begin with "www."');
     return;
   }
@@ -181,24 +181,24 @@ app.post("/urls/new", (req, res) => {
 // redirect to full site
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL].long;
-  if (longURL) { // check if shortURL is in the database
-    res.redirect(longURL);
-  } else {
-    // res.status(404).redirect("/urls/error"); // send to error page
+  if (!longURL) { // check if shortURL is in the database
     res.status(404).send("Shortened URL doesn't exist!");
     return;
+  } else {
+    res.redirect(longURL);
   }
+
 });
 
 // render show page
 app.get("/urls/:id", (req, res) => {
-  let user_id = req.cookies["user_id"];
+  let user_id = req.session.user_id;
   let templateVars = {
     shortURL: req.params.id,
     database: urlDatabase,
     urls: urlsForUser(user_id),
-    user_id: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    user_id: req.session.user_id,
+    user: users[req.session.user_id]
   };
   res.render("urls_show", templateVars);
 });
@@ -208,7 +208,7 @@ app.post("/urls/:id", (req, res) => {
   let newURL = {};
   let shortURL = req.params.id;
   let longURL = req.body[req.params.id];
-  let user_id = req.cookies["user_id"];
+  let user_id = req.session.user_id;
   let url_id = urlDatabase[req.params.id].id;
   let checker = true;
   if (user_id !== url_id) {
@@ -217,7 +217,6 @@ app.post("/urls/:id", (req, res) => {
   }
   if (!longURL.includes("www.")) {
     checker = false;
-    // res.status(400).redirect("/urls/error");
     res.status(400).send('URLs must begin with "www."');
     return;
   }
@@ -235,7 +234,7 @@ app.post("/urls/:id", (req, res) => {
 
 // delete url, redirect to urls page
 app.post("/urls/:id/delete", (req, res) => {
-  let user_id = req.cookies["user_id"];
+  let user_id = req.session.user_id;
   let url_id = urlDatabase[req.params.id].id;
   if (user_id !== url_id) {
     res.status(403).send("Cannot delete URLs you didn't make!");
@@ -250,11 +249,6 @@ app.post("/urls/:id/delete", (req, res) => {
 app.get("/urls/:id/edit", (req, res) => {
   let shortURL = req.params.id;
   res.redirect(`/urls/${shortURL}`);
-});
-
-// show json file
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
 });
 
 app.listen(PORT, () => {

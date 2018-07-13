@@ -6,6 +6,13 @@
 
   <body>
     <div id="wrapper">
+      <% if (!user_id) { %>
+      <h1>TinyApp</h1>
+      <h2>A URL Shortener</h2>
+      <hr>
+      <h2 class="home_subline">Please Login or Register to Begin</h2>
+      <% include partials/_header %>
+      <% } else { %>
       <% include partials/_header %>
       <hr>
       <h1>TinyApp</h1>
@@ -17,12 +24,13 @@
           <tr>
             <td><a href="u/<%= urls[url].short %>"><%= urls[url].short %></a></td>
             <td><%= urls[url].long %></td>
-            <td><form method="POST" action="/urls/<%= urls[url].short %>/delete"><input class="button" type="submit" value="Delete"></input></form></td>
             <td><form method="GET" action="/urls/<%= urls[url].short %>/edit"><input class="button" type="submit" value="Edit"></input></form></td>
+            <td><form method="POST" action="/urls/<%= urls[url].short %>/delete"><input class="button" type="submit" value="Delete"></input></form></td>
           </tr>
         <% }; %>
       </table>
       <p><a href="/urls/new">Shorten a new URL</a></p>
+      <% } %>
     </div>
   </body>
 </html>
