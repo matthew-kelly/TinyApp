@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcrypt');
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
@@ -67,7 +68,7 @@ app.post("/register", (req, res) => {
     res.status(400).send("Email and Password fields cannot be empty!");
     return;
   } else {
-    newUserObj.password = req.body.password;
+    newUserObj.password = bcrypt.hashSync(req.body.password, 10);
   }
   for (let key in users) { // duplicate email
     if (users[key].email === req.body.email) {
@@ -98,7 +99,7 @@ app.post("/login", (req, res) => {
   let userid = "";
   for (let key in users) {
     if (users[key].email === email) { // email in database
-      if (users[key].password === password) { // password in database
+      if (bcrypt.compareSync(password, users[key].password)) { // password in database
         userid = users[key].id;
       }
     }
