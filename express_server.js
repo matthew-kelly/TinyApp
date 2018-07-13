@@ -71,7 +71,6 @@ app.post("/register", (req, res) => {
     return;
   } else {
     newUserObj.password = bcrypt.hashSync(req.body.password, saltRounds);
-    console.log(newUserObj.password);
   }
   for (let key in users) { // duplicate email
     if (users[key].email === req.body.email) {

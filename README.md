@@ -4,11 +4,12 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Screenshot of URLs page"](#)
-!["Screenshot of Login page"](#)
-!["Screenshot of Registration page"](#)
-!["Screenshot of New URL page"](#)
-!["Screenshot of Short URL page"](#)
+!["Screenshot of URLs page (not logged in)"](https://github.com/matthew-kelly/tinyurl/blob/master/docs/urls_page_no_login.jpeg)
+!["Screenshot of New URL page (logged in)"](https://github.com/matthew-kelly/tinyurl/blob/master/docs/urls_page_login.jpeg)
+!["Screenshot of Registration page"](https://github.com/matthew-kelly/tinyurl/blob/master/docs/registration_page.jpeg)
+!["Screenshot of Login page"](https://github.com/matthew-kelly/tinyurl/blob/master/docs/login_page.jpeg)
+!["Screenshot of New URL page"](https://github.com/matthew-kelly/tinyurl/blob/master/docs/urls_new_page.jpeg)
+!["Screenshot of Short URL page"](https://github.com/matthew-kelly/tinyurl/blob/master/docs/urls_short_page.jpeg)
 
 ## Dependencies
 
