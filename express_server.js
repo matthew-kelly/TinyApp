@@ -27,6 +27,7 @@ let users = {
   }
 };
 
+// url database with sample urls
 let urlDatabase = {
   "b2xVn2": {
     short: "b2xVn2",
@@ -40,9 +41,9 @@ let urlDatabase = {
   }
 };
 
-// home redirect to urls page
+// home redirects
 app.get("/", (req, res) => {
-  const login = req.session.user_id;
+  const login = req.session.userId;
   if (login) {
     res.redirect("/urls");
   } else {
@@ -52,14 +53,14 @@ app.get("/", (req, res) => {
 
 // render registration page
 app.get("/register", (req, res) => {
-  const login = req.session.user_id;
+  const login = req.session.userId;
   if (login) {
     res.redirect("/urls");
   } else {
     let templateVars = {
       urls: urlDatabase,
-      user_id: req.session.user_id,
-      user: users[req.session.user_id]
+      userId: req.session.userId,
+      user: users[req.session.userId]
     };
     res.render("urls_register", templateVars);
   }
@@ -89,20 +90,20 @@ app.post("/register", (req, res) => {
     }
   }
   users[newID] = newUserObj;
-  req.session.user_id = newID;
+  req.session.userId = newID;
   res.redirect("/urls");
 });
 
 // render login page
 app.get("/login", (req, res) => {
-  const login = req.session.user_id;
+  const login = req.session.userId;
   if (login) {
     res.redirect("/urls");
   } else {
     let templateVars = {
       urls: urlDatabase,
-      user_id: req.session.user_id,
-      user: users[req.session.user_id]
+      userId: req.session.userId,
+      user: users[req.session.userId]
     };
     res.render("urls_login", templateVars);
   }
@@ -124,35 +125,35 @@ app.post("/login", (req, res) => {
     res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Incorrect Email or Password!<h3>");
     return;
   }
-  req.session.user_id = userid;
+  req.session.userId = userid;
   res.redirect("/urls");
 });
 
 // delete login cookie, redirect to urls page
 app.post("/logout", (req, res) => {
-  req.session.user_id = undefined;
+  req.session.userId = undefined;
   res.redirect("/urls");
 });
 
 // render urls page
 app.get("/urls", (req, res) => {
-  const user_id = req.session.user_id;
+  const userId = req.session.userId;
   let templateVars = {
-    urls: urlsForUser(user_id),
-    user_id: req.session.user_id,
-    user: users[req.session.user_id]
+    urls: urlsForUser(userId),
+    userId: req.session.userId,
+    user: users[req.session.userId]
   };
   res.render("urls_index", templateVars);
 });
 
 // render new url page
 app.get("/urls/new", (req, res) => {
-  const login = req.session.user_id;
+  const login = req.session.userId;
   if (login) {
     let templateVars = {
       urls: urlDatabase,
-      user_id: req.session.user_id,
-      user: users[req.session.user_id]
+      userId: req.session.userId,
+      user: users[req.session.userId]
     };
     res.render("urls_new", templateVars);
   } else {
@@ -163,11 +164,11 @@ app.get("/urls/new", (req, res) => {
 // create new short/long url pair, redirect to urls
 app.post("/urls/new", (req, res) => {
   let newURL = {};
-  let user_id = req.session.user_id;
+  let userId = req.session.userId;
   let shortURL = generateRandomString();
   let longURL = req.body.longURL;
   let checker = true;
-  if (urlDatabase.hasOwnProperty(shortURL)) { // check if generated string matches an already existing one, generates a new string otherwise. Will still cause an error if the 2nd number is the same as well.
+  if (urlDatabase.hasOwnProperty(shortURL)) { // if string already exists, generates a new string. Will cause an error if the 2nd attempt is the same as well. Probability laws say to ignore for purposes of this project.
     shortURL = generateRandomString();
   }
   if (!longURL.includes("www.")) {
@@ -181,7 +182,7 @@ app.post("/urls/new", (req, res) => {
     }
     newURL.short = shortURL;
     newURL.long = longURL;
-    newURL.id = user_id;
+    newURL.id = userId;
     urlDatabase[shortURL] = newURL;
     res.redirect(`/urls/${shortURL}`);
   }
@@ -190,30 +191,29 @@ app.post("/urls/new", (req, res) => {
 // redirect to full site
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL].long;
-  if (!longURL) { // check if shortURL is in the database
+  if (!longURL) {
     res.status(404).send("<h2>Error 404: Not Found</h2><h3>Shortened URL doesn't exist!<h3>");
     return;
   } else {
     res.redirect(longURL);
   }
-
 });
 
 // render show page
 app.get("/urls/:id", (req, res) => {
-  const login = req.session.user_id;
+  const login = req.session.userId;
   if (!login) {
     res.status(404).send("<h2>Error 403: Forbidden</h2><h3>Must be logged in first!<h3>");
   } else if (urlDatabase[req.params.id].id !== login) {
     res.status(404).send("<h2>Error 403: Forbidden</h2><h3>Cannot edit URLs you didn't make!<h3>");
   } else {
-    let user_id = req.session.user_id;
+    let userId = req.session.userId;
     let templateVars = {
       shortURL: req.params.id,
       database: urlDatabase,
-      urls: urlsForUser(user_id),
-      user_id: req.session.user_id,
-      user: users[req.session.user_id]
+      urls: urlsForUser(userId),
+      userId: req.session.userId,
+      user: users[req.session.userId]
     };
     res.render("urls_show", templateVars);
   }
@@ -224,13 +224,13 @@ app.post("/urls/:id", (req, res) => {
   let newURL = {};
   let shortURL = req.params.id;
   let longURL = req.body[req.params.id];
-  let user_id = req.session.user_id;
+  let userId = req.session.userId;
   let url_id = urlDatabase[req.params.id].id;
   let checker = true;
-  if (!user_id) {
+  if (!userId) {
     res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Must be logged in first!<h3>");
     return;
-  } else if (user_id !== url_id) {
+  } else if (userId !== url_id) {
     res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Cannot edit URLs you didn't make!<h3>");
     return;
   }
@@ -245,7 +245,7 @@ app.post("/urls/:id", (req, res) => {
     }
     newURL.short = shortURL;
     newURL.long = longURL;
-    newURL.id = user_id;
+    newURL.id = userId;
     urlDatabase[shortURL] = newURL;
     res.redirect("/urls");
   }
@@ -253,12 +253,12 @@ app.post("/urls/:id", (req, res) => {
 
 // delete url, redirect to urls page
 app.post("/urls/:id/delete", (req, res) => {
-  let user_id = req.session.user_id;
+  let userId = req.session.userId;
   let url_id = urlDatabase[req.params.id].id;
-  if (!user_id) {
+  if (!userId) {
     res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Must be logged in first!<h3>");
     return;
-  } else if (user_id !== url_id) {
+  } else if (userId !== url_id) {
     res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Cannot delete URLs you didn't make!<h3>");
     return;
   } else {
@@ -293,6 +293,7 @@ function generateRandomString() {
   return string;
 }
 
+// filters urlDatabase for user's urls
 function urlsForUser(id) {
   let userURLS = {};
   for (let url in urlDatabase) {

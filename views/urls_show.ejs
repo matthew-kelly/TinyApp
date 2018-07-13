@@ -6,7 +6,7 @@
 
   <body>
     <div id="wrapper">
-    <% if (!user_id) { %>
+    <% if (!userId) { %>
       <h1>Not Logged In</h1>
       <hr>
       <form action="/login" method="GET" class="text-form header-text">
@@ -15,7 +15,7 @@
       <form action="/register" method="GET" class="text-form header-text">
         <input class="button" type="submit" value="Register">
       </form>
-    <% } else if (user_id !== database[shortURL].id) { %>
+    <% } else if (userId !== database[shortURL].id) { %>
       <% include partials/_header %>
       <hr>
       <h1>Not Your URL</h1>
