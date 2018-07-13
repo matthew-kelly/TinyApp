@@ -42,17 +42,27 @@ let urlDatabase = {
 
 // home redirect to urls page
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  const login = req.session.user_id;
+  if (login) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // render registration page
 app.get("/register", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    user_id: req.session.user_id,
-    user: users[req.session.user_id]
-  };
-  res.render("urls_register", templateVars);
+  const login = req.session.user_id;
+  if (login) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      urls: urlDatabase,
+      user_id: req.session.user_id,
+      user: users[req.session.user_id]
+    };
+    res.render("urls_register", templateVars);
+  }
 });
 
 // create new user registration, add to users object
@@ -61,20 +71,20 @@ app.post("/register", (req, res) => {
   let newUserObj = {};
   newUserObj.id = newID;
   if (!req.body.email) { // no email
-    res.status(400).send("Email and Password fields cannot be empty!");
+    res.status(400).send("<h2>Error 400: Bad Request</h2><h3>Email and Password fields cannot be empty!<h3>");
     return;
   } else {
     newUserObj.email = req.body.email;
   }
   if (!req.body.password) { // no password
-    res.status(400).send("Email and Password fields cannot be empty!");
+    res.status(400).send("<h2>Error 400: Bad Request</h2><h3>Email and Password fields cannot be empty!<h3>");
     return;
   } else {
     newUserObj.password = bcrypt.hashSync(req.body.password, saltRounds);
   }
   for (let key in users) { // duplicate email
     if (users[key].email === req.body.email) {
-      res.status(400).send("Email already exists!");
+      res.status(400).send("<h2>Error 400: Bad Request</h2><h3>Email already exists!<h3>");
       return;
     }
   }
@@ -85,12 +95,17 @@ app.post("/register", (req, res) => {
 
 // render login page
 app.get("/login", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    user_id: req.session.user_id,
-    user: users[req.session.user_id]
-  };
-  res.render("urls_login", templateVars);
+  const login = req.session.user_id;
+  if (login) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      urls: urlDatabase,
+      user_id: req.session.user_id,
+      user: users[req.session.user_id]
+    };
+    res.render("urls_login", templateVars);
+  }
 });
 
 // create login cookie, redirect to urls page
@@ -106,7 +121,7 @@ app.post("/login", (req, res) => {
     }
   }
   if (!userid) {
-    res.status(403).send("Incorrect Email or Password!");
+    res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Incorrect Email or Password!<h3>");
     return;
   }
   req.session.user_id = userid;
@@ -130,24 +145,19 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// render error page
-app.get("/urls/error", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    user_id: req.session.user_id,
-    user: users[req.session.user_id]
-  };
-  res.render("urls_error", templateVars);
-});
-
 // render new url page
 app.get("/urls/new", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    user_id: req.session.user_id,
-    user: users[req.session.user_id]
-  };
-  res.render("urls_new", templateVars);
+  const login = req.session.user_id;
+  if (login) {
+    let templateVars = {
+      urls: urlDatabase,
+      user_id: req.session.user_id,
+      user: users[req.session.user_id]
+    };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // create new short/long url pair, redirect to urls
@@ -162,7 +172,7 @@ app.post("/urls/new", (req, res) => {
   }
   if (!longURL.includes("www.")) {
     checker = false;
-    res.status(400).send('URLs must begin with "www."');
+    res.status(400).send('<h2>Error 400: Bad Request</h2><h3>URLs must begin with "www."<h3>');
     return;
   }
   if (checker) {
@@ -181,7 +191,7 @@ app.post("/urls/new", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL].long;
   if (!longURL) { // check if shortURL is in the database
-    res.status(404).send("Shortened URL doesn't exist!");
+    res.status(404).send("<h2>Error 404: Not Found</h2><h3>Shortened URL doesn't exist!<h3>");
     return;
   } else {
     res.redirect(longURL);
@@ -191,15 +201,22 @@ app.get("/u/:shortURL", (req, res) => {
 
 // render show page
 app.get("/urls/:id", (req, res) => {
-  let user_id = req.session.user_id;
-  let templateVars = {
-    shortURL: req.params.id,
-    database: urlDatabase,
-    urls: urlsForUser(user_id),
-    user_id: req.session.user_id,
-    user: users[req.session.user_id]
-  };
-  res.render("urls_show", templateVars);
+  const login = req.session.user_id;
+  if (!login) {
+    res.status(404).send("<h2>Error 403: Forbidden</h2><h3>Must be logged in first!<h3>");
+  } else if (urlDatabase[req.params.id].id !== login) {
+    res.status(404).send("<h2>Error 403: Forbidden</h2><h3>Cannot edit URLs you didn't make!<h3>");
+  } else {
+    let user_id = req.session.user_id;
+    let templateVars = {
+      shortURL: req.params.id,
+      database: urlDatabase,
+      urls: urlsForUser(user_id),
+      user_id: req.session.user_id,
+      user: users[req.session.user_id]
+    };
+    res.render("urls_show", templateVars);
+  }
 });
 
 // edit url, redirect to urls page
@@ -210,13 +227,16 @@ app.post("/urls/:id", (req, res) => {
   let user_id = req.session.user_id;
   let url_id = urlDatabase[req.params.id].id;
   let checker = true;
-  if (user_id !== url_id) {
-    res.status(403).send("Cannot edit URLs you didn't make!");
+  if (!user_id) {
+    res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Must be logged in first!<h3>");
+    return;
+  } else if (user_id !== url_id) {
+    res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Cannot edit URLs you didn't make!<h3>");
     return;
   }
   if (!longURL.includes("www.")) {
     checker = false;
-    res.status(400).send('URLs must begin with "www."');
+    res.status(400).send('<h2>Error 400: Bad Request</h2><h3>URLs must begin with "www."<h3>');
     return;
   }
   if (checker) {
@@ -235,8 +255,11 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   let user_id = req.session.user_id;
   let url_id = urlDatabase[req.params.id].id;
-  if (user_id !== url_id) {
-    res.status(403).send("Cannot delete URLs you didn't make!");
+  if (!user_id) {
+    res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Must be logged in first!<h3>");
+    return;
+  } else if (user_id !== url_id) {
+    res.status(403).send("<h2>Error 403: Forbidden</h2><h3>Cannot delete URLs you didn't make!<h3>");
     return;
   } else {
     delete urlDatabase[req.params.id];
