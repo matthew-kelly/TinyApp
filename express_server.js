@@ -3,7 +3,9 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
+const methodOverride = require("method-override");
+app.use(methodOverride("_method"));
 app.use(cookieSession({
   name: "session",
   keys: ["secret"],
@@ -220,7 +222,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 // edit url, redirect to urls page
-app.post("/urls/:id", (req, res) => {
+app.put("/urls/:id", (req, res) => {
   let newURL = {};
   let shortURL = req.params.id;
   let longURL = req.body[req.params.id];
@@ -252,7 +254,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 // delete url, redirect to urls page
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id", (req, res) => {
   let userId = req.session.userId;
   let url_id = urlDatabase[req.params.id].id;
   if (!userId) {
@@ -267,7 +269,7 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
-// redirect edit to show page
+// redirect edit button to show page
 app.get("/urls/:id/edit", (req, res) => {
   let shortURL = req.params.id;
   res.redirect(`/urls/${shortURL}`);

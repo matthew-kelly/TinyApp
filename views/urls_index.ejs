@@ -25,7 +25,7 @@
             <td><a href="u/<%= urls[url].short %>"><%= urls[url].short %></a></td>
             <td><%= urls[url].long %></td>
             <td><form method="GET" action="/urls/<%= urls[url].short %>/edit"><input class="button" type="submit" value="Edit"></input></form></td>
-            <td><form method="POST" action="/urls/<%= urls[url].short %>/delete"><input class="button" type="submit" value="Delete"></input></form></td>
+            <td><form method="POST" action="/urls/<%= urls[url].short %>?_method=DELETE"><input class="button" type="submit" value="Delete"></input></form></td>
           </tr>
         <% }; %>
       </table>
