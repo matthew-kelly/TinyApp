@@ -24,10 +24,12 @@
       <% include partials/_header %>
       <hr>
       <table>
-        <tr><th colspan="2">Shortened URL</th></tr>
+        <tr><th colspan="4">Shortened URL</th></tr>
         <tr>
           <td><a href="/u/<%= shortURL %>"><%= shortURL %></a></td>
           <td><%= urls[shortURL].long %></td>
+          <td>Clicks: <%= urls[shortURL].clicks %></td>
+          <td>Unique Visitors: <%= urls[shortURL].visitors.length %></td>
         </tr>
       </table>
       <form action="/urls/<%= shortURL %>?_method=PUT" method="POST" class="text-form">
@@ -35,6 +37,17 @@
         <input class="text-input" id="<%= shortURL %>" type="text" name="<%= shortURL %>" placeholder="www.example.ca">
         <input class="button" type="submit" value="Submit">
       </form>
+      <table>
+        <tr>
+          <th colspan="2">Visits</th>
+        </tr>
+        <% for (let i = 0; i < urls[shortURL].visits.length; i++) { %>
+        <tr>
+          <td><%= urls[shortURL].visits[i][0] %></td>
+          <td><%= urls[shortURL].visits[i][1] %></td>
+        </tr>
+        <% } %>
+      </table>
     <% } %>
       <p><a href="/urls">Back to URLs</a></p>
     </div>

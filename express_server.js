@@ -5,10 +5,11 @@ const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
 const methodOverride = require("method-override");
+const dateFormat = require("dateformat");
 app.use(methodOverride("_method"));
 app.use(cookieSession({
   name: "session",
-  keys: ["secret"],
+  keys: ["login", "uniqueVisitor"],
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
@@ -34,12 +35,18 @@ let urlDatabase = {
   "b2xVn2": {
     short: "b2xVn2",
     long: "http://www.lighthouselabs.ca",
-    id: "x5RsDv"
+    id: "x5RsDv",
+    clicks: 0,
+    visitors: [],
+    visits: []
   },
   "9sm5xK": {
     short: "9sm5xK",
     long: "http://www.google.com",
-    id: "ui98nm"
+    id: "ui98nm",
+    clicks: 0,
+    visitors: [],
+    visits: []
   }
 };
 
@@ -185,6 +192,9 @@ app.post("/urls/new", (req, res) => {
     newURL.short = shortURL;
     newURL.long = longURL;
     newURL.id = userId;
+    newURL.clicks = 0;
+    newURL.visitors = [];
+    newURL.visits = [];
     urlDatabase[shortURL] = newURL;
     res.redirect(`/urls/${shortURL}`);
   }
@@ -192,11 +202,23 @@ app.post("/urls/new", (req, res) => {
 
 // redirect to full site
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL].long;
+  const userId = req.session.userId;
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL].long;
   if (!longURL) {
     res.status(404).send("<h2>Error 404: Not Found</h2><h3>Shortened URL doesn't exist!<h3>");
     return;
   } else {
+    let dateVisit = []
+    let newVisitTime = new Date();
+    dateVisit.push(generateRandomString());
+    dateVisit.push(dateFormat(newVisitTime, "mmmm dS, yyyy, h:MM TT") + " UTC");
+    urlDatabase[shortURL].visits.push(dateVisit);
+    if (!req.session.uniqueVisitor) {
+      req.session.uniqueVisitor = generateRandomString();
+      urlDatabase[shortURL].visitors.push(req.session.uniqueVisitor);
+    }
+    urlDatabase[shortURL].clicks++;
     res.redirect(longURL);
   }
 });
@@ -279,7 +301,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// functions
+// --------- Functions ---------
 // random string - sampled from https://stackoverflow.com/questions/16106701/how-to-generate-a-random-string-of-letters-and-numbers-in-javascript
 function generateRandomString() {
   let string = "";
