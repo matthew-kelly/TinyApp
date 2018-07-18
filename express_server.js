@@ -80,13 +80,13 @@ app.post("/register", (req, res) => {
   const newID = generateRandomString();
   let newUserObj = {};
   newUserObj.id = newID;
-  if (!req.body.email) { // no email
+  if (!req.body.email.trim()) { // no email
     res.status(400).send("<h2>Error 400: Bad Request</h2><h3>Email and Password fields cannot be empty!<h3>");
     return;
   } else {
     newUserObj.email = req.body.email;
   }
-  if (!req.body.password) { // no password
+  if (!req.body.password.trim()) { // no password
     res.status(400).send("<h2>Error 400: Bad Request</h2><h3>Email and Password fields cannot be empty!<h3>");
     return;
   } else {
@@ -211,7 +211,6 @@ app.get("/u/:shortURL", (req, res) => {
   } else {
     let dateVisit = []
     let newVisitTime = new Date();
-    dateVisit.push(generateRandomString());
     dateVisit.push(dateFormat(newVisitTime, "mmmm dS, yyyy, h:MM TT") + " UTC");
     urlDatabase[shortURL].visits.push(dateVisit);
     if (!req.session.uniqueVisitor) {
@@ -270,7 +269,7 @@ app.put("/urls/:id", (req, res) => {
     newURL.short = shortURL;
     newURL.long = longURL;
     newURL.id = userId;
-    urlDatabase[shortURL] = newURL;
+    urlDatabase[shortURL] = Object.assign(urlDatabase[shortURL], newURL);
     res.redirect("/urls");
   }
 });

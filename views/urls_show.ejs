@@ -43,8 +43,7 @@
         </tr>
         <% for (let i = 0; i < urls[shortURL].visits.length; i++) { %>
         <tr>
-          <td><%= urls[shortURL].visits[i][0] %></td>
-          <td><%= urls[shortURL].visits[i][1] %></td>
+          <td><%= urls[shortURL].visits[i] %></td>
         </tr>
         <% } %>
       </table>
