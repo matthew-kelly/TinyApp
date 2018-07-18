@@ -7,14 +7,14 @@
   <body>
     <div id="wrapper">
       <% if (!userId) { %>
-        <h1>Not Logged In</h1>
-        <hr>
-        <form action="/login" method="GET" class="text-form header-text">
-          <input class="button" type="submit" value="Login">
-        </form>
-        <form action="/register" method="GET" class="text-form header-text">
-          <input class="button" type="submit" value="Register">
-        </form>
+      <h1>Not Logged In</h1>
+      <hr>
+      <form action="/login" method="GET" class="text-form header-text">
+        <input class="button" type="submit" value="Login">
+      </form>
+      <form action="/register" method="GET" class="text-form header-text">
+        <input class="button" type="submit" value="Register">
+      </form>
       <% } else { %>
 
       <% include partials/_header %>

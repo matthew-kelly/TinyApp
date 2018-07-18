@@ -11,7 +11,9 @@ app.use(cookieSession({
   name: "session",
   keys: ["login", "uniqueVisitor"],
 }));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/views")); // allows css in expressjs
 const saltRounds = 10;

@@ -6,7 +6,7 @@
 
   <body>
     <div id="wrapper">
-    <% if (!userId) { %>
+      <% if (!userId) { %>
       <h1>Not Logged In</h1>
       <hr>
       <form action="/login" method="GET" class="text-form header-text">
@@ -47,7 +47,7 @@
         </tr>
         <% } %>
       </table>
-    <% } %>
+      <% } %>
       <p><a href="/urls">Back to URLs</a></p>
     </div>
   </body>
